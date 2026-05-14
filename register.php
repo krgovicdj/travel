@@ -1,0 +1,78 @@
+<?php
+session_start();
+require "connection.php";
+global $conn;
+//if(isset($_SESSION['username'])){
+//    header("location: index.php");
+//}
+$username=$password=$email="";
+$usernameErr=$passwordErr=$emailErr="";
+if(isset($_POST['submit'])){
+    $check=true;
+    if(empty($_POST["username"])){
+        $usernameErr = "Username is required";
+        $check=false;
+    }else{
+        $username=$_POST["username"];
+    }
+    if(strlen($_POST["password"])<8){
+        $passwordErr = "Password must be at least 8 characters";
+        $check=false;
+    }else{
+        $password=$_POST["password"];
+    }
+    if(!empty($_POST['email'])&&!filter_var($email,FILTER_VALIDATE_EMAIL)){
+        $emailErr = "Invalid email format";
+        $check=false;
+    }else{
+        $email=$_POST["email"];
+    }
+    if($check){
+        $stmt=$conn->prepare("insert into user(username,password,email) values(?,?,?)");
+        $stmt->bind_param("sss",$username,$password,$email);
+        $sql="select * from user where username='$username'";
+        if($conn->query($sql)->num_rows==0){
+            if($stmt->execute()){
+                header("location: index.php");
+            }else{
+                echo "<script>alert('Something went wrong');</script>";
+            }
+        }else{
+            echo "<script>alert('Username is already taken!');</script>";
+        }
+
+    }
+}
+?>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Register</title>
+</head>
+<body>
+<h2>Register</h2>
+<form method="POST" action="<?php echo $_SERVER['PHP_SELF'];?>">
+    <label for="username">Username</label>
+    <input type="text" name="username" id="username" placeholder="Enter Username"
+    value="<?php echo $username;?>">
+    <span><?php echo $usernameErr;?></span>
+    <br>
+    <label for="email">E-mail</label>
+    <input type="text" name="email" id="email" placeholder="Enter e-mail"
+    value="<?php echo $email;?>">
+    <span><?php echo $emailErr;?></span>
+    <br>
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" placeholder="Enter Password"
+    value="<?php echo $password;?>">
+    <span><?php echo $passwordErr;?></span>
+    <br>
+    <input type="submit" value="Register" name="submit">
+</form>
+
+</body>
+</html>
