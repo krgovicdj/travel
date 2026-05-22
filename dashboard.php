@@ -53,7 +53,9 @@ $result = $stmt->get_result();
 <a href="logout.php">
     <button>Logout</button>
 </a>
-
+<hr>
+<a href="explore.php">🌍 Explore Trips</a>
+<a href="saved_trips.php">💾 Saved Trips</a>
 <hr>
 
 <h3>Trips</h3>
