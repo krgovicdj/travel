@@ -32,6 +32,7 @@ $result = $stmt->get_result();
     <meta charset="UTF-8">
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
 
@@ -57,22 +58,29 @@ $result = $stmt->get_result();
 
 <h3>Trips</h3>
 
-<table border="1">
+<table border="1" id="tripsTable">
+    <thead>
     <tr>
         <th>Name</th>
         <th>Status</th>
         <th>Start</th>
         <th>End</th>
         <th>Notes</th>
-        <?php if ($user_type != 3) {
-            echo "<th>Author</th>";
-        } ?>
+        <?php if ($user_type != 3) { echo "<th>Author</th>"; } ?>
         <th colspan="2">Actions</th>
     </tr>
+    </thead>
+    <tbody id="tripsBody">
     <?php while ($row = $result->fetch_assoc()) { ?>
-        <tr>
+        <tr id="trip-row-<?php echo $row['id']; ?>">
             <td><?php echo htmlspecialchars($row['name']); ?></td>
-            <td><?php echo htmlspecialchars($row['status']); ?></td>
+            <td class="trip-status">
+                <select class="status-select" data-id="<?php echo $row['id']; ?>">
+                    <option value="planirano" <?php echo $row['status']=='planirano' ? 'selected' : ''; ?>>Planirano</option>
+                    <option value="u toku" <?php echo $row['status']=='u toku' ? 'selected' : ''; ?>>U toku</option>
+                    <option value="završeno" <?php echo $row['status']=='završeno' ? 'selected' : ''; ?>>Završeno</option>
+                </select>
+            </td>
             <td><?php echo htmlspecialchars($row['start_date']); ?></td>
             <td><?php echo htmlspecialchars($row['end_date']); ?></td>
             <td><?php echo htmlspecialchars($row['notes']); ?></td>
@@ -80,25 +88,22 @@ $result = $stmt->get_result();
                 <td><?php echo htmlspecialchars($row['author_name']); ?></td>
             <?php } ?>
             <td>
-                <?php
-                if ($user_type == 1 || $user_type == 3) {
-                    echo "<a href='edit_trip.php?id=" . $row['id'] . "'>✏️</a>";
-                } else {
-                    echo "<span style='opacity:0.2;'>✏️</span>";
-                }
-                ?>
+                <?php if ($user_type == 1 || ($user_type == 3 && $row['user_id'] == $user_id)) { ?>
+                    <a href="edit_trip.php?id=<?php echo $row['id']; ?>">✏️</a>
+                <?php } else { ?>
+                    <span style="opacity:0.3;">✏️</span>
+                <?php } ?>
             </td>
             <td>
-                <?php
-                if (($user_type == 3 && $row['user_id'] == $user_id) || ($user_type == 2 || $user_type == 1)) {
-                    echo "<a href='delete_trip.php?id=" . $row['id'] . "' onclick=\"return confirm('Delete this trip?')\">🗑️</a>";
-                } else {
-                    echo "<span style='opacity:0.5;'>🗑️</span>";
-                }
-                ?>
+                <?php if (($user_type == 3 && $row['user_id'] == $user_id) || $user_type == 2 || $user_type == 1) { ?>
+                    <a href="javascript:void(0)" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
+                <?php } else { ?>
+                    <span style="opacity:0.3;">🗑️</span>
+                <?php } ?>
             </td>
         </tr>
     <?php } ?>
+    </tbody>
 </table>
 
 <hr>
@@ -169,6 +174,67 @@ if ($user_type != 2) {
 unset($_SESSION['form_errors']);
 unset($_SESSION['old_input']);
 ?>
+
+<script>
+    $(function() {
+        // AJAX UPDATE - promjena statusa
+        $(document).on('change', '.status-select', function() {
+            let tripId = $(this).data('id');
+            let newStatus = $(this).val();
+            let select = $(this);
+
+            $.ajax({
+                url: 'ajax_update_status.php',
+                type: 'POST',
+                data: { id: tripId, status: newStatus },
+                dataType: 'json',
+                success: function(response) {
+                    if(response.success) {
+                        select.css('background-color', '#90EE90');
+                        setTimeout(function() {
+                            select.css('background-color', '');
+                        }, 500);
+                    } else {
+                        alert('Error: ' + response.error);
+                        location.reload();
+                    }
+                },
+                error: function() {
+                    alert('AJAX error - Update failed');
+                }
+            });
+        });
+
+        // AJAX DELETE
+        $(document).on('click', '.delete-btn', function(e) {
+            e.preventDefault();
+
+            let tripId = $(this).data('id');
+            let row = $('#trip-row-' + tripId);
+
+            if(confirm('Delete this trip?')) {
+                $.ajax({
+                    url: 'ajax_delete_trip.php',
+                    type: 'POST',
+                    data: { id: tripId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if(response.success) {
+                            row.fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                        } else {
+                            alert('Error: ' + response.error);
+                        }
+                    },
+                    error: function() {
+                        alert('AJAX error - Delete failed');
+                    }
+                });
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
