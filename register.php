@@ -2,9 +2,9 @@
 session_start();
 require "connection.php";
 global $conn;
-//if(isset($_SESSION['username'])){
-//    header("location: index.php");
-//}
+if (isset($_SESSION['username'])) {
+    header("location: dashboard.php");
+}
 $username=$password=$email="";
 $usernameErr=$passwordErr=$emailErr="";
 if(isset($_POST['submit'])){
@@ -21,7 +21,7 @@ if(isset($_POST['submit'])){
     }else{
         $password=$_POST["password"];
     }
-    if(!empty($_POST['email'])&&!filter_var($email,FILTER_VALIDATE_EMAIL)){
+    if(!empty($_POST['email'])and!filter_var($_POST['email'],FILTER_VALIDATE_EMAIL)){
         $emailErr = "Invalid email format";
         $check=false;
     }else{
@@ -30,8 +30,12 @@ if(isset($_POST['submit'])){
     if($check){
         $stmt=$conn->prepare("insert into user(username,password,email) values(?,?,?)");
         $stmt->bind_param("sss",$username,$password,$email);
-        $sql="select * from user where username='$username'";
-        if($conn->query($sql)->num_rows==0){
+        $sql="select * from user where username=?";
+        $stmt=$conn->prepare($sql);
+        $stmt->bind_param("s",$username);
+        $stmt->execute();
+        $result=$stmt->get_result();
+        if($result->num_rows==0){
             if($stmt->execute()){
                 header("location: index.php");
             }else{
@@ -52,6 +56,7 @@ if(isset($_POST['submit'])){
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Register</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <h2>Register</h2>

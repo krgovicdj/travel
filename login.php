@@ -1,18 +1,24 @@
 <?php
 session_start();
 require "connection.php";
+if (isset($_SESSION['username'])) {
+    header("location: dashboard.php");
+}
 global $conn;
 if(isset($_POST['submit'])){
     $username = $_POST['username'];
     $password = $_POST['password'];
-    $sql = "SELECT * FROM user WHERE username = '$username' AND password = '$password'";
-    $result = $conn->query($sql);
+    $sql = "SELECT * FROM user WHERE username = ? AND password = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $username, $password);
+    $stmt->execute();
+    $result = $stmt->get_result();
     if($result->num_rows == 0){
         echo "<script>alert('Login data is Wrong');</script>";
     }else{
         $_SESSION['username'] = $username;
-        $user_type = $result->fetch_assoc()['type_id'];
-        $_SESSION['user_type'] = $user_type;
+        $_SESSION['user_id'] = $result->fetch_assoc()['id'];
+        $_SESSION['user_type'] = $result->fetch_assoc()['type_id'];
         header("location: dashboard.php");
     }
 }
@@ -25,6 +31,7 @@ if(isset($_POST['submit'])){
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <h2>Login</h2>
