@@ -4,6 +4,7 @@ require "connection.php";
 global $conn;
 if (isset($_SESSION['username'])) {
     header("location: dashboard.php");
+    exit();
 }
 $username=$password=$email="";
 $usernameErr=$passwordErr=$emailErr="";
@@ -28,21 +29,18 @@ if(isset($_POST['submit'])){
         $email=$_POST["email"];
     }
     if($check){
-        $stmt=$conn->prepare("insert into user(username,password,email) values(?,?,?)");
-        $stmt->bind_param("sss",$username,$password,$email);
-        $sql="select * from user where username=?";
-        $stmt=$conn->prepare($sql);
-        $stmt->bind_param("s",$username);
-        $stmt->execute();
-        $result=$stmt->get_result();
-        if($result->num_rows==0){
-            if($stmt->execute()){
+        $check_stmt = $conn->prepare("select * from user where username=?");
+        $check_stmt->bind_param("s", $username);
+        $check_stmt->execute();
+        $result = $check_stmt->get_result();
+
+        if($result->num_rows == 0){
+            $insert_stmt = $conn->prepare("insert into user(username,password,email) values(?,?,?)");
+            $insert_stmt->bind_param("sss", $username, $password, $email);
+            if($insert_stmt->execute()){
                 header("location: index.php");
-            }else{
-                echo "<script>alert('Something went wrong');</script>";
+                exit();
             }
-        }else{
-            echo "<script>alert('Username is already taken!');</script>";
         }
 
     }

@@ -14,7 +14,6 @@ $name = $start_date = $end_date = $notes = $status = "";
 if(isset($_POST['submit'])){
     $user_id = $_SESSION['user_id'];
 
-    // === VALIDACIJA ZA NAME ===
     if(empty($_POST['name'])) {
         $errors['name'] = "Naziv putovanja je obavezan";
     } else {
@@ -31,7 +30,6 @@ if(isset($_POST['submit'])){
         $check_stmt->close();
     }
 
-    // === VALIDACIJA ZA STATUS ===
     $allowed_statuses = ['planirano', 'u toku', 'završeno'];
     if(empty($_POST['status'])) {
         $status = 'planirano';
@@ -41,7 +39,6 @@ if(isset($_POST['submit'])){
         $status = $_POST['status'];
     }
 
-    // === VALIDACIJA ZA START DATE ===
     if(empty($_POST['start_date'])) {
         $errors['start_date'] = "Datum početka je obavezan";
     } else {
@@ -56,7 +53,6 @@ if(isset($_POST['submit'])){
         }
     }
 
-    // === VALIDACIJA ZA END DATE ===
     if(!empty($_POST['end_date'])) {
         $end_date = $_POST['end_date'];
         $end_timestamp = strtotime($end_date);
@@ -68,7 +64,6 @@ if(isset($_POST['submit'])){
         }
     }
 
-    // === VALIDACIJA ZA NOTES ===
     if(!empty($_POST['notes'])) {
         $notes = trim($_POST['notes']);
         if(strlen($notes) > 500) {
@@ -76,7 +71,6 @@ if(isset($_POST['submit'])){
         }
     }
 
-    // === AKO NEMA GREŠAKA, UNOSI U BAZU ===
     if(empty($errors)) {
         $stmt = $conn->prepare("INSERT INTO trip (name, start_date, end_date, notes, status, user_id) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("sssssi", $name, $start_date, $end_date, $notes, $status, $user_id);
@@ -93,7 +87,6 @@ if(isset($_POST['submit'])){
         $stmt->close();
     }
 
-    // Ako ima grešaka, čuvamo ih u sesiji
     if(!empty($errors)) {
         $_SESSION['form_errors'] = $errors;
         $_SESSION['old_input'] = [

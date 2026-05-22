@@ -3,6 +3,7 @@ session_start();
 require "connection.php";
 if (isset($_SESSION['username'])) {
     header("location: dashboard.php");
+    exit();
 }
 global $conn;
 if(isset($_POST['submit'])){
@@ -16,10 +17,12 @@ if(isset($_POST['submit'])){
     if($result->num_rows == 0){
         echo "<script>alert('Login data is Wrong');</script>";
     }else{
+        $user_data = $result->fetch_assoc();
         $_SESSION['username'] = $username;
-        $_SESSION['user_id'] = $result->fetch_assoc()['id'];
-        $_SESSION['user_type'] = $result->fetch_assoc()['type_id'];
+        $_SESSION['user_id'] = $user_data['id'];
+        $_SESSION['user_type'] = $user_data['type_id'];
         header("location: dashboard.php");
+        exit();
     }
 }
 ?>
