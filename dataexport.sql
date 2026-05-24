@@ -27,14 +27,14 @@ DROP TABLE IF EXISTS `activity`;
 CREATE TABLE `activity` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
-  `start_date` date NOT NULL,
-  `end_date` date NOT NULL,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
   `notes` varchar(255) DEFAULT NULL,
   `trip_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `trip_id` (`trip_id`),
-  CONSTRAINT `activity_ibfk_1` FOREIGN KEY (`trip_id`) REFERENCES `trip` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `activity_ibfk_1` (`trip_id`),
+  CONSTRAINT `activity_ibfk_1` FOREIGN KEY (`trip_id`) REFERENCES `trip` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,6 +43,7 @@ CREATE TABLE `activity` (
 
 LOCK TABLES `activity` WRITE;
 /*!40000 ALTER TABLE `activity` DISABLE KEYS */;
+INSERT INTO `activity` VALUES (4,'Eiffel Tower Visit','2026-06-02','2026-06-02','Buy tickets online',14);
 /*!40000 ALTER TABLE `activity` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -59,7 +60,7 @@ CREATE TABLE `destination` (
   `country` varchar(255) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -68,7 +69,7 @@ CREATE TABLE `destination` (
 
 LOCK TABLES `destination` WRITE;
 /*!40000 ALTER TABLE `destination` DISABLE KEYS */;
-INSERT INTO `destination` VALUES (1,'Pariz','Francuska','Grad svjetlosti'),(2,'Rim','Italija','Vječni grad'),(3,'London','Engleska','Grad na Temzi'),(4,'Budimpešta','Mađarska','Bisava na Dunavu'),(5,'Dubrovnik','Hrvatska','Biser Jadrana');
+INSERT INTO `destination` VALUES (1,'Pariz','Francuska','Grad svjetlosti'),(2,'Rim','Italija','Vječni grad'),(3,'London','Engleska','Grad na Temzi'),(4,'Budimpešta','Mađarska','Bisava na Dunavu'),(5,'Dubrovnik','Hrvatska','Biser Jadrana'),(6,'Paris','France','City of Light');
 /*!40000 ALTER TABLE `destination` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -85,12 +86,13 @@ CREATE TABLE `review` (
   `comment` varchar(255) NOT NULL,
   `user_id` int(11) NOT NULL,
   `trip_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
-  KEY `trip_id` (`trip_id`),
+  KEY `review_ibfk_2` (`trip_id`),
   CONSTRAINT `review_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `review_ibfk_2` FOREIGN KEY (`trip_id`) REFERENCES `trip` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  CONSTRAINT `review_ibfk_2` FOREIGN KEY (`trip_id`) REFERENCES `trip` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -99,6 +101,7 @@ CREATE TABLE `review` (
 
 LOCK TABLES `review` WRITE;
 /*!40000 ALTER TABLE `review` DISABLE KEYS */;
+INSERT INTO `review` VALUES (3,5,'duhwaida',3,4,'2026-05-23 18:25:27'),(4,5,'super',7,4,'2026-05-23 18:27:31'),(5,4,'dwadawdawdw',3,5,'2026-05-23 19:59:03');
 /*!40000 ALTER TABLE `review` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -123,7 +126,7 @@ CREATE TABLE `trip` (
   KEY `destination_id` (`destination_id`),
   CONSTRAINT `trip_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
   CONSTRAINT `trip_ibfk_2` FOREIGN KEY (`destination_id`) REFERENCES `destination` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -132,7 +135,7 @@ CREATE TABLE `trip` (
 
 LOCK TABLES `trip` WRITE;
 /*!40000 ALTER TABLE `trip` DISABLE KEYS */;
-INSERT INTO `trip` VALUES (3,'dwada','planirano','2026-05-25','2026-05-29','',3,NULL),(4,'testmilena','planirano','2026-05-25','2026-05-25','',6,NULL),(5,'test2','planirano','2026-05-26','2026-05-27','dawdwad',6,NULL);
+INSERT INTO `trip` VALUES (4,'testmilena','planirano','2026-05-25','2026-05-25','',6,NULL),(5,'test2','planirano','2026-05-26','2026-05-27','dawdwad',6,NULL),(7,'test2','planirano','2026-05-26','2026-05-27','dawdwad',1,NULL),(9,'trip marko','završeno','2026-05-29','2026-05-29','dwad',3,NULL),(10,'s','planirano','2026-07-24','2026-10-30','',3,NULL),(11,'aad','planirano','2026-09-24','2026-09-30','',3,NULL),(13,'testimp','planirano','2026-05-26','2026-05-27','testiranjeimporta',1,NULL),(14,'Trip to Paris','planirano','2026-06-01','2026-06-10','Visit Eiffel Tower',3,NULL),(15,'Trip to Moscow','planirano','2026-06-01','2026-06-10','',3,NULL);
 /*!40000 ALTER TABLE `trip` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -159,6 +162,7 @@ CREATE TABLE `trip_destination` (
 
 LOCK TABLES `trip_destination` WRITE;
 /*!40000 ALTER TABLE `trip_destination` DISABLE KEYS */;
+INSERT INTO `trip_destination` VALUES (14,6);
 /*!40000 ALTER TABLE `trip_destination` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -173,13 +177,13 @@ CREATE TABLE `trip_photo` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `url` varchar(255) NOT NULL,
-  `upload_date` date NOT NULL,
+  `upload_date` date DEFAULT curdate(),
   `caption` varchar(255) DEFAULT NULL,
   `trip_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `trip_id` (`trip_id`),
-  CONSTRAINT `trip_photo_ibfk_1` FOREIGN KEY (`trip_id`) REFERENCES `trip` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `trip_photo_ibfk_1` (`trip_id`),
+  CONSTRAINT `trip_photo_ibfk_1` FOREIGN KEY (`trip_id`) REFERENCES `trip` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -188,6 +192,7 @@ CREATE TABLE `trip_photo` (
 
 LOCK TABLES `trip_photo` WRITE;
 /*!40000 ALTER TABLE `trip_photo` DISABLE KEYS */;
+INSERT INTO `trip_photo` VALUES (12,'s1','https://wallpaperaccess.com/full/11729.jpg','2026-05-23','',9),(13,'a','https://wallpaperaccess.com/full/11729.jpg','2026-05-23','',9),(14,'Eiffel Tower','https://example.com/eiffel.jpg','2026-05-23','Beautiful view',14);
 /*!40000 ALTER TABLE `trip_photo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -203,7 +208,7 @@ CREATE TABLE `trip_save` (
   `trip_id` int(11) NOT NULL,
   `saved_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`user_id`,`trip_id`),
-  KEY `trip_id` (`trip_id`),
+  KEY `trip_save_ibfk_2` (`trip_id`),
   CONSTRAINT `trip_save_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `trip_save_ibfk_2` FOREIGN KEY (`trip_id`) REFERENCES `trip` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -215,7 +220,7 @@ CREATE TABLE `trip_save` (
 
 LOCK TABLES `trip_save` WRITE;
 /*!40000 ALTER TABLE `trip_save` DISABLE KEYS */;
-INSERT INTO `trip_save` VALUES (3,3,'2026-05-22 19:21:21'),(3,5,'2026-05-22 19:22:27');
+INSERT INTO `trip_save` VALUES (3,9,'2026-05-23 19:55:55'),(3,10,'2026-05-23 19:55:54'),(3,11,'2026-05-23 19:55:53'),(3,14,'2026-05-23 19:55:54');
 /*!40000 ALTER TABLE `trip_save` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -235,7 +240,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   KEY `user_ibfk_1` (`type_id`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`type_id`) REFERENCES `user_type` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -244,7 +249,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'admin','12345678',NULL,1),(3,'marko','marko123','',3),(4,'jovan','12345678','',3),(5,'moderator','12345678',NULL,2),(6,'milena','milena123','milena@gmail.com',3);
+INSERT INTO `user` VALUES (1,'admin','12345678',NULL,1),(3,'marko','marko123','',3),(4,'jovan','12345678','',3),(5,'moderator','12345678',NULL,2),(6,'milena','milena123','milena@gmail.com',3),(7,'milan','milan123','milan@gmail.com',3);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -281,4 +286,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-22 21:26:00
+-- Dump completed on 2026-05-24  2:27:18
