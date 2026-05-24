@@ -58,6 +58,7 @@ $result = $conn->query($sql);
         <th>End</th>
         <th>Author</th>
         <th>Actions</th>
+        <th>Reviews</th>
     </tr>
     </thead>
     <tbody id="tripsBody">
@@ -71,28 +72,33 @@ $result = $conn->query($sql);
             <td class="trip-start"><?php echo $row['start_date']; ?></td>
             <td class="trip-end"><?php echo $row['end_date']; ?></td>
             <td class="trip-author"><?php echo htmlspecialchars($row['author_name']); ?></td>
-            <td>
-                <?php if(isset($_SESSION['username'])): ?>
+                <td><?php if(isset($_SESSION['username'])): ?>
                     <!-- Sačuvaj dugme -->
+
                     <a href="javascript:void(0)" class="save-btn" data-id="<?php echo $row['id']; ?>">💾 Sačuvaj</a>
+
 
                     <!-- Ako je admin ili autor, može editovati -->
                     <?php if(($user_type == 1) || ($user_id == $row['author_id'])): ?>
-                        <a href="edit_trip.php?id=<?php echo $row['id']; ?>">✏️</a>
+            <a href="edit_trip.php?id=<?php echo $row['id']; ?>">✏️</a>
                     <?php endif; ?>
+
 
                     <!-- Ako je admin, moderator ili autor, može brisati -->
                     <?php if(($user_type == 1 || $user_type == 2) || ($user_id == $row['author_id'])): ?>
-                        <a href="javascript:void(0)" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
+            <a href="javascript:void(0)" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
                     <?php endif; ?>
                 <?php else: ?>
                     <span>Login to save trips</span>
                 <?php endif; ?>
+                    <a href="trip_details.php?id=<?php echo $row['id']; ?>" class="btn-details">📋 Details</a>
+            </td>
+            <td>
+                <a href="reviews.php?trip_id=<?php echo $row['id']; ?>">💬 Reviews</a>
             </td>
         </tr>
     <?php endwhile; ?>
     </tbody>
-    95able
 
     <script>
         function filterTrips() {
@@ -157,8 +163,59 @@ $result = $conn->query($sql);
                 });
             }
         });
+
+        // AJAX UPDATE - izmjena datuma (double click)
+        $(document).on('dblclick', '.start-date, .end-date', function() {
+            let td = $(this);
+            let oldValue = td.text();
+            let tripId = td.data('id');
+            let field = td.data('field');
+
+            let input = $('<input>', {
+                type: 'date',
+                value: oldValue,
+                css: { width: '100%' }
+            });
+            td.html(input);
+            input.focus();
+
+            input.on('blur', function() {
+                let newValue = $(this).val();
+
+                if(newValue && newValue != oldValue) {
+                    $.ajax({
+                        url: 'ajax_update_date.php',
+                        type: 'POST',
+                        data: { id: tripId, field: field, value: newValue },
+                        dataType: 'json',
+                        success: function(response) {
+                            if(response.success) {
+                                td.html(newValue);
+                                td.css('background-color', '#90EE90');
+                                setTimeout(function() {
+                                    td.css('background-color', '');
+                                }, 500);
+                            } else {
+                                alert('Error: ' + response.error);
+                                td.html(oldValue);
+                            }
+                        },
+                        error: function() {
+                            td.html(oldValue);
+                            alert('AJAX error');
+                        }
+                    });
+                } else {
+                    td.html(oldValue);
+                }
+            });
+        });
         <?php endif; ?>
     </script>
 
+    <br>
+    <a href="export_json.php">📥 Export JSON</a>
+    <a href="report_monthly.php">📊 Izvještaj po mjesecima (CSV)</a>
+    <a href="report_by_user.php">📊 Izvještaj po korisnicima (CSV)</a>
 </body>
 </html>

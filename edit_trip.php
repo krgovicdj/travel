@@ -63,6 +63,9 @@ if(isset($_POST['submit'])) {
 </head>
 <body>
 <h2>Edit Trip</h2>
+<a href="activities.php?trip_id=<?php echo $trip['id']; ?>">📅 Activities</a>
+<a href="manage_destinations.php?trip_id=<?php echo $trip['id']; ?>">📍 Manage Destinations</a>
+<a href="photos.php?trip_id=<?php echo $trip['id']; ?>">📷 Photos</a>
 <form method="post">
     <input type="hidden" name="id" value="<?php echo $trip['id']; ?>">
 

@@ -8,13 +8,15 @@ if(!isset($_SESSION['username'])) {
 }
 
 require "connection.php";
-global $conn;
+global $conn;  // OBAVEZNO!
 
 $user_id = $_SESSION['user_id'];
 $user_type = $_SESSION['user_type'];
 
 if(isset($_POST['id'])) {
     $trip_id = $_POST['id'];
+
+    error_log("Trying to delete trip_id: " . $trip_id . " by user_id: " . $user_id . " type: " . $user_type);
 
     if($user_type == 1 || $user_type == 2) {
         $stmt = $conn->prepare("DELETE FROM trip WHERE id = ?");

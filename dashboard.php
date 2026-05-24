@@ -68,7 +68,9 @@ $result = $stmt->get_result();
         <th>Start</th>
         <th>End</th>
         <th>Notes</th>
-        <?php if ($user_type != 3) { echo "<th>Author</th>"; } ?>
+        <?php if ($user_type != 3) {
+            echo "<th>Author</th>";
+        } ?>
         <th colspan="2">Actions</th>
     </tr>
     </thead>
@@ -78,13 +80,23 @@ $result = $stmt->get_result();
             <td><?php echo htmlspecialchars($row['name']); ?></td>
             <td class="trip-status">
                 <select class="status-select" data-id="<?php echo $row['id']; ?>">
-                    <option value="planirano" <?php echo $row['status']=='planirano' ? 'selected' : ''; ?>>Planirano</option>
-                    <option value="u toku" <?php echo $row['status']=='u toku' ? 'selected' : ''; ?>>U toku</option>
-                    <option value="završeno" <?php echo $row['status']=='završeno' ? 'selected' : ''; ?>>Završeno</option>
+                    <option value="planirano" <?php echo $row['status'] == 'planirano' ? 'selected' : ''; ?>>Planirano
+                    </option>
+                    <option value="u toku" <?php echo $row['status'] == 'u toku' ? 'selected' : ''; ?>>U toku</option>
+                    <option value="završeno" <?php echo $row['status'] == 'završeno' ? 'selected' : ''; ?>>Završeno
+                    </option>
                 </select>
             </td>
-            <td><?php echo htmlspecialchars($row['start_date']); ?></td>
-            <td><?php echo htmlspecialchars($row['end_date']); ?></td>
+            <td>
+                <input type="date" class="start-date-input" data-id="<?php echo $row['id']; ?>"
+                       data-field="start_date" data-old="<?php echo $row['start_date']; ?>"
+                       value="<?php echo $row['start_date']; ?>">
+            </td>
+            <td>
+                <input type="date" class="end-date-input" data-id="<?php echo $row['id']; ?>"
+                       data-field="end_date" data-old="<?php echo $row['end_date']; ?>"
+                       value="<?php echo $row['end_date']; ?>">
+            </td>
             <td><?php echo htmlspecialchars($row['notes']); ?></td>
             <?php if ($user_type != 3) { ?>
                 <td><?php echo htmlspecialchars($row['author_name']); ?></td>
@@ -178,8 +190,114 @@ unset($_SESSION['old_input']);
 ?>
 
 <script>
-    $(function() {
-        // AJAX UPDATE - promjena statusa
+    $(function () {
+        // AJAX UPDATE - izmjena start datuma (sa validacijom)
+        $(document).on('change', '.start-date-input', function() {
+            let input = $(this);
+            let tripId = input.data('id');
+            let field = input.data('field');
+            let newValue = input.val();
+            let oldValue = input.attr('data-old') || input.val();
+
+            // VALIDACIJA 1: datum ne smije biti prazan
+            if(!newValue) {
+                alert('Start date cannot be empty!');
+                input.val(oldValue);
+                return;
+            }
+
+            // VALIDACIJA 2: datum ne smije biti u prošlosti
+            let today = new Date().toISOString().split('T')[0];
+            if(newValue < today) {
+                alert('Start date cannot be in the past!');
+                input.val(oldValue);
+                return;
+            }
+
+            // VALIDACIJA 3: end date (ako postoji) ne smije biti prije start date
+            let endDateInput = input.closest('tr').find('.end-date-input');
+            let endDate = endDateInput.val();
+            if(endDate && newValue > endDate) {
+                alert('Start date cannot be after end date!');
+                input.val(oldValue);
+                return;
+            }
+
+            if(newValue != oldValue) {
+                $.ajax({
+                    url: 'ajax_update_date.php',
+                    type: 'POST',
+                    data: { id: tripId, field: field, value: newValue },
+                    dataType: 'json',
+                    success: function(response) {
+                        if(response.success) {
+                            input.css('background-color', '#90EE90');
+                            input.attr('data-old', newValue);
+                            setTimeout(function() {
+                                input.css('background-color', '');
+                            }, 500);
+                        } else {
+                            alert('Error: ' + response.error);
+                            input.val(oldValue);
+                        }
+                    },
+                    error: function() {
+                        alert('AJAX error');
+                        input.val(oldValue);
+                    }
+                });
+            }
+        });
+
+// AJAX UPDATE - izmjena end datuma (sa validacijom)
+        $(document).on('change', '.end-date-input', function() {
+            let input = $(this);
+            let tripId = input.data('id');
+            let field = input.data('field');
+            let newValue = input.val();
+            let oldValue = input.attr('data-old') || input.val();
+
+            // VALIDACIJA 1: end date nije obavezan (može biti prazan)
+            // ako je prazan, dozvoli
+
+            // VALIDACIJA 2: ako nije prazan, ne smije biti prije start date
+            if(newValue) {
+                let startDateInput = input.closest('tr').find('.start-date-input');
+                let startDate = startDateInput.val();
+                if(startDate && newValue < startDate) {
+                    alert('End date cannot be before start date!');
+                    input.val(oldValue);
+                    return;
+                }
+            }
+
+            if(newValue != oldValue) {
+                $.ajax({
+                    url: 'ajax_update_date.php',
+                    type: 'POST',
+                    data: { id: tripId, field: field, value: newValue },
+                    dataType: 'json',
+                    success: function(response) {
+                        if(response.success) {
+                            input.css('background-color', '#90EE90');
+                            input.attr('data-old', newValue);
+                            setTimeout(function() {
+                                input.css('background-color', '');
+                            }, 500);
+                        } else {
+                            alert('Error: ' + response.error);
+                            input.val(oldValue);
+                        }
+                    },
+                    error: function() {
+                        alert('AJAX error');
+                        input.val(oldValue);
+                    }
+                });
+            }
+        });
+
+        // AJAX UPDATE - promjena statusa (ovo fali!)
         $(document).on('change', '.status-select', function() {
             let tripId = $(this).data('id');
             let newStatus = $(this).val();
@@ -198,38 +316,37 @@ unset($_SESSION['old_input']);
                         }, 500);
                     } else {
                         alert('Error: ' + response.error);
-                        location.reload();
                     }
                 },
                 error: function() {
-                    alert('AJAX error - Update failed');
+                    alert('AJAX error');
                 }
             });
         });
 
         // AJAX DELETE
-        $(document).on('click', '.delete-btn', function(e) {
+        $(document).on('click', '.delete-btn', function (e) {
             e.preventDefault();
 
             let tripId = $(this).data('id');
             let row = $('#trip-row-' + tripId);
 
-            if(confirm('Delete this trip?')) {
+            if (confirm('Delete this trip?')) {
                 $.ajax({
                     url: 'ajax_delete_trip.php',
                     type: 'POST',
-                    data: { id: tripId },
+                    data: {id: tripId},
                     dataType: 'json',
-                    success: function(response) {
-                        if(response.success) {
-                            row.fadeOut(300, function() {
+                    success: function (response) {
+                        if (response.success) {
+                            row.fadeOut(300, function () {
                                 $(this).remove();
                             });
                         } else {
                             alert('Error: ' + response.error);
                         }
                     },
-                    error: function() {
+                    error: function () {
                         alert('AJAX error - Delete failed');
                     }
                 });
@@ -237,6 +354,8 @@ unset($_SESSION['old_input']);
         });
     });
 </script>
-
+<br>
+<br>
+<a href="import_json.php">📥 Import JSON (samo admin)</a>
 </body>
 </html>
