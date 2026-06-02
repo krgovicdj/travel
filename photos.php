@@ -1,6 +1,7 @@
 <?php
 session_start();
 require "connection.php";
+global $conn;
 
 if(!isset($_SESSION['username'])) {
     header("location: index.php");
