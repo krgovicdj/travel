@@ -25,8 +25,6 @@ header('Content-Disposition: attachment; filename="izvjestaj_po_korisnicima_' . 
 
 $output = fopen('php://output', 'w');
 
-fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-
 fwrite($output, "Korisnik;Tip;Broj putovanja\n");
 
 if($result->num_rows > 0) {

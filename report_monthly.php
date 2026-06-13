@@ -25,8 +25,6 @@ header('Content-Disposition: attachment; filename="izvjestaj_po_mjesecima_' . da
 
 $output = fopen('php://output', 'w');
 
-fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-
 fwrite($output, "Godina;Mjesec;Broj putovanja\n");
 
 if($result->num_rows > 0) {
