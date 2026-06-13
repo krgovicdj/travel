@@ -1,5 +1,3 @@
-/* ========== GLOBALNI STILOVI ========== */
-
 * {
     margin: 0;
     padding: 0;
@@ -9,7 +7,6 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f0f2f5;
-    color: #333;
     line-height: 1.6;
     padding: 20px;
 }
@@ -35,8 +32,6 @@ button:hover, .btn:hover {
     text-decoration: none;
 }
 
-/* ========== FORME I INPUTI ========== */
-
 form {
     background: white;
     padding: 20px;
@@ -53,6 +48,7 @@ label {
     font-weight: bold;
     margin: 10px 0 5px;
 }
+
 input[type="submit"] {
     background: #0056b3;
     color: white;
@@ -89,8 +85,6 @@ span {
     margin-left: 10px;
 }
 
-/* ========== TABELE ========== */
-
 table {
     background: white;
     border-collapse: collapse;
@@ -117,8 +111,6 @@ tr:nth-child(even) {
 tr:hover {
     background: #f1f1f1;
 }
-
-/* ========== DUGMAD I LINKOVI ========== */
 
 .btn-sm {
     display: inline-block;
@@ -186,8 +178,6 @@ tr:hover {
     background: #c82333;
 }
 
-/* ========== TRIP DETAILS STRANICA ========== */
-
 .trip-details-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -225,7 +215,6 @@ tr:hover {
     color: #333;
 }
 
-/* DESTINACIJE */
 .destinations-list {
     list-style: none;
     padding: 0;
@@ -239,7 +228,6 @@ tr:hover {
     border-radius: 0 5px 5px 0;
 }
 
-/* GALERIJA SLIKA - KARTICE */
 .photo-gallery {
     display: flex;
     flex-wrap: wrap;
@@ -303,7 +291,6 @@ tr:hover {
     display: block;
 }
 
-/* AKTIVNOSTI - TABELA */
 .activity-table {
     width: 100%;
     border-collapse: collapse;
@@ -325,7 +312,6 @@ tr:hover {
     background: #f9f9f9;
 }
 
-/* RECENZIJE */
 .review-card {
     border: 1px solid #ddd;
     margin: 15px 0;
@@ -353,7 +339,6 @@ tr:hover {
     color: #888;
 }
 
-/* FORMA ZA DODAVANJE RECENZIJE */
 .add-review-form {
     background: #f0f8ff;
     padding: 20px;
@@ -377,7 +362,6 @@ tr:hover {
     border-radius: 5px;
 }
 
-/* PORUKE */
 .no-data {
     color: #888;
     font-style: italic;
@@ -403,8 +387,6 @@ tr:hover {
     margin: 10px 0;
     border: 1px solid #f5c6cb;
 }
-
-/* ========== RESPONZIVNOST ========== */
 
 @media (max-width: 768px) {
     body {
@@ -442,8 +424,6 @@ tr:hover {
         padding: 10px;
     }
 }
-
-/* ========== DASHBOARD I EXPLORE ========== */
 
 h2, h3 {
     color: #333;
@@ -494,4 +474,18 @@ table a:hover {
     padding: 20px;
     align-content: center;
     height: 400px;
+}
+.home-desc{
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.home-desc h2 {
+    color: white;
+}
+
+.home-desc p {
+    color: #e0e0e0;
+    margin-bottom: 10px;
+    text-align: justify;
 }

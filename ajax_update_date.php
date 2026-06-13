@@ -23,7 +23,7 @@ if(isset($_POST['id']) && isset($_POST['field']) && isset($_POST['value'])) {
         exit();
     }
 
-    if(!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+    if(!strtotime($value)) {
         echo json_encode(['success' => false, 'error' => 'Invalid date']);
         exit();
     }

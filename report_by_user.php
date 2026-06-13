@@ -8,7 +8,6 @@ if(!isset($_SESSION['username'])) {
     exit();
 }
 
-// Izvještaj: broj putovanja po korisnicima
 $sql = "SELECT 
             u.username,
             ut.type,
@@ -26,10 +25,8 @@ header('Content-Disposition: attachment; filename="izvjestaj_po_korisnicima_' . 
 
 $output = fopen('php://output', 'w');
 
-// UTF-8 BOM
 fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
-// Zaglavlje sa tačka-zarez
 fwrite($output, "Korisnik;Tip;Broj putovanja\n");
 
 if($result->num_rows > 0) {

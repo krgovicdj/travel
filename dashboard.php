@@ -110,7 +110,7 @@ $result = $stmt->get_result();
             </td>
             <td>
                 <?php if (($user_type == 3 && $row['user_id'] == $user_id) || $user_type == 2 || $user_type == 1) { ?>
-                    <a href="javascript:void(0)" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
+                    <a href="#" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
                 <?php } else { ?>
                     <span style="opacity:0.3;">🗑️</span>
                 <?php } ?>
@@ -191,49 +191,45 @@ unset($_SESSION['old_input']);
 
 <script>
     $(function () {
-        // AJAX UPDATE - izmjena start datuma (sa validacijom)
-        $(document).on('change', '.start-date-input', function() {
+        $(document).on('change', '.start-date-input', function () {
             let input = $(this);
             let tripId = input.data('id');
             let field = input.data('field');
             let newValue = input.val();
             let oldValue = input.attr('data-old') || input.val();
 
-            // VALIDACIJA 1: datum ne smije biti prazan
-            if(!newValue) {
+            if (!newValue) {
                 alert('Start date cannot be empty!');
                 input.val(oldValue);
                 return;
             }
 
-            // VALIDACIJA 2: datum ne smije biti u prošlosti
             let today = new Date().toISOString().split('T')[0];
-            if(newValue < today) {
+            if (newValue < today) {
                 alert('Start date cannot be in the past!');
                 input.val(oldValue);
                 return;
             }
 
-            // VALIDACIJA 3: end date (ako postoji) ne smije biti prije start date
             let endDateInput = input.closest('tr').find('.end-date-input');
             let endDate = endDateInput.val();
-            if(endDate && newValue > endDate) {
+            if (endDate && newValue > endDate) {
                 alert('Start date cannot be after end date!');
                 input.val(oldValue);
                 return;
             }
 
-            if(newValue != oldValue) {
+            if (newValue != oldValue) {
                 $.ajax({
                     url: 'ajax_update_date.php',
                     type: 'POST',
-                    data: { id: tripId, field: field, value: newValue },
+                    data: {id: tripId, field: field, value: newValue},
                     dataType: 'json',
-                    success: function(response) {
-                        if(response.success) {
+                    success: function (response) {
+                        if (response.success) {
                             input.css('background-color', '#90EE90');
                             input.attr('data-old', newValue);
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 input.css('background-color', '');
                             }, 500);
                         } else {
@@ -241,7 +237,7 @@ unset($_SESSION['old_input']);
                             input.val(oldValue);
                         }
                     },
-                    error: function() {
+                    error: function () {
                         alert('AJAX error');
                         input.val(oldValue);
                     }
@@ -249,39 +245,34 @@ unset($_SESSION['old_input']);
             }
         });
 
-// AJAX UPDATE - izmjena end datuma (sa validacijom)
-        $(document).on('change', '.end-date-input', function() {
+        $(document).on('change', '.end-date-input', function () {
             let input = $(this);
             let tripId = input.data('id');
             let field = input.data('field');
             let newValue = input.val();
             let oldValue = input.attr('data-old') || input.val();
 
-            // VALIDACIJA 1: end date nije obavezan (može biti prazan)
-            // ako je prazan, dozvoli
-
-            // VALIDACIJA 2: ako nije prazan, ne smije biti prije start date
-            if(newValue) {
+            if (newValue) {
                 let startDateInput = input.closest('tr').find('.start-date-input');
                 let startDate = startDateInput.val();
-                if(startDate && newValue < startDate) {
+                if (startDate && newValue < startDate) {
                     alert('End date cannot be before start date!');
                     input.val(oldValue);
                     return;
                 }
             }
 
-            if(newValue != oldValue) {
+            if (newValue != oldValue) {
                 $.ajax({
                     url: 'ajax_update_date.php',
                     type: 'POST',
-                    data: { id: tripId, field: field, value: newValue },
+                    data: {id: tripId, field: field, value: newValue},
                     dataType: 'json',
-                    success: function(response) {
-                        if(response.success) {
+                    success: function (response) {
+                        if (response.success) {
                             input.css('background-color', '#90EE90');
                             input.attr('data-old', newValue);
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 input.css('background-color', '');
                             }, 500);
                         } else {
@@ -289,7 +280,7 @@ unset($_SESSION['old_input']);
                             input.val(oldValue);
                         }
                     },
-                    error: function() {
+                    error: function () {
                         alert('AJAX error');
                         input.val(oldValue);
                     }
@@ -297,8 +288,7 @@ unset($_SESSION['old_input']);
             }
         });
 
-        // AJAX UPDATE - promjena statusa (ovo fali!)
-        $(document).on('change', '.status-select', function() {
+        $(document).on('change', '.status-select', function () {
             let tripId = $(this).data('id');
             let newStatus = $(this).val();
             let select = $(this);
@@ -306,25 +296,24 @@ unset($_SESSION['old_input']);
             $.ajax({
                 url: 'ajax_update_status.php',
                 type: 'POST',
-                data: { id: tripId, status: newStatus },
+                data: {id: tripId, status: newStatus},
                 dataType: 'json',
-                success: function(response) {
-                    if(response.success) {
+                success: function (response) {
+                    if (response.success) {
                         select.css('background-color', '#90EE90');
-                        setTimeout(function() {
+                        setTimeout(function () {
                             select.css('background-color', '');
                         }, 500);
                     } else {
                         alert('Error: ' + response.error);
                     }
                 },
-                error: function() {
+                error: function () {
                     alert('AJAX error');
                 }
             });
         });
 
-        // AJAX DELETE
         $(document).on('click', '.delete-btn', function (e) {
             e.preventDefault();
 
@@ -356,6 +345,6 @@ unset($_SESSION['old_input']);
 </script>
 <br>
 <br>
-<a href="import_json.php">📥 Import JSON (samo admin)</a>
+<a href="import_json.php">Import JSON (samo admin)</a>
 </body>
 </html>

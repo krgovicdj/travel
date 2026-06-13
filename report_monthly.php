@@ -8,7 +8,6 @@ if(!isset($_SESSION['username'])) {
     exit();
 }
 
-// Izvještaj: broj putovanja po svakom mjesecu
 $sql = "SELECT 
             YEAR(start_date) as godina,
             MONTH(start_date) as mjesec_broj,
@@ -21,16 +20,13 @@ $sql = "SELECT
 
 $result = $conn->query($sql);
 
-// Postavi header za CSV download
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="izvjestaj_po_mjesecima_' . date('Y-m-d') . '.csv"');
 
 $output = fopen('php://output', 'w');
 
-// Umjesto fputcsv, koristi fwrite sa tačka-zarez separatorom
-fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
-// Zaglavlje
 fwrite($output, "Godina;Mjesec;Broj putovanja\n");
 
 if($result->num_rows > 0) {

@@ -13,7 +13,6 @@ $user_type = $_SESSION['user_type'];
 $activity_id = $_GET['id'] ?? 0;
 $trip_id = $_GET['trip_id'] ?? 0;
 
-// Dohvati aktivnost
 $stmt = $conn->prepare("SELECT * FROM activity WHERE id = ?");
 $stmt->bind_param("i", $activity_id);
 $stmt->execute();
@@ -24,7 +23,6 @@ if(!$activity) {
     exit();
 }
 
-// UPDATE
 if(isset($_POST['submit'])) {
     $name = $_POST['name'];
     $start_date = $_POST['start_date'];

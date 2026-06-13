@@ -12,7 +12,6 @@ $user_id = $_SESSION['user_id'];
 $message = "";
 $error = "";
 
-// Dohvati sve postojeće destinacije za brzo povezivanje
 $destinations_map = [];
 $dest_result = $conn->query("SELECT id, city, country FROM destination");
 while($dest = $dest_result->fetch_assoc()) {
@@ -28,13 +27,11 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
         $imported = 0;
 
         foreach($trips as $trip_data) {
-            // Provjera da li putovanje već postoji za ovog korisnika
             $check = $conn->prepare("SELECT id FROM trip WHERE name = ? AND user_id = ?");
             $check->bind_param("si", $trip_data['name'], $user_id);
             $check->execute();
 
             if($check->get_result()->num_rows == 0) {
-                // 1. Ubaci TRIP
                 $name = $trip_data['name'] ?? 'Untitled Trip';
                 $status = $trip_data['status'] ?? 'planirano';
                 $start_date = $trip_data['start_date'] ?? date('Y-m-d');
@@ -46,7 +43,6 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
                 $stmt->execute();
                 $new_trip_id = $stmt->insert_id;
 
-                // 2. Ubaci DESTINACIJE
                 if(isset($trip_data['destinations']) && is_array($trip_data['destinations'])) {
                     foreach($trip_data['destinations'] as $dest) {
                         $city = $dest['city'] ?? '';
@@ -58,7 +54,6 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
                             if(isset($destinations_map[$key])) {
                                 $dest_id = $destinations_map[$key];
                             } else {
-                                // Kreiraj novu destinaciju
                                 $dest_stmt = $conn->prepare("INSERT INTO destination (city, country, description) VALUES (?, ?, ?)");
                                 $dest_stmt->bind_param("sss", $city, $country, $description);
                                 $dest_stmt->execute();
@@ -66,7 +61,6 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
                                 $destinations_map[$key] = $dest_id;
                             }
 
-                            // Poveži putovanje sa destinacijom
                             $link_stmt = $conn->prepare("INSERT INTO trip_destination (trip_id, destination_id) VALUES (?, ?)");
                             $link_stmt->bind_param("ii", $new_trip_id, $dest_id);
                             $link_stmt->execute();
@@ -74,7 +68,6 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
                     }
                 }
 
-                // 3. Ubaci AKTIVNOSTI
                 if(isset($trip_data['activities']) && is_array($trip_data['activities'])) {
                     foreach($trip_data['activities'] as $act) {
                         $act_name = $act['name'] ?? 'Activity';
@@ -88,7 +81,6 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
                     }
                 }
 
-                // 4. Ubaci FOTOGRAFIJE
                 if(isset($trip_data['photos']) && is_array($trip_data['photos'])) {
                     foreach($trip_data['photos'] as $photo) {
                         $photo_name = $photo['name'] ?? 'Photo';
@@ -107,14 +99,14 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
             }
         }
 
-        $message = "✅ Successfully imported $imported trips!";
+        $message = "Imported $imported trips.";
     } else {
-        $error = "❌ Invalid JSON file!";
+        $error = "Invalid JSON file!";
     }
 }
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
     <title>Import JSON</title>
     <link rel="stylesheet" href="style.css">
@@ -127,17 +119,17 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
 
         <a href="dashboard.php" class="btn btn-secondary" style="display: inline-block; margin-bottom: 20px;">← Back to Dashboard</a>
 
-        <?php if($message): ?>
+        <?php if($message) { ?>
             <div class="success-message">
                 <?php echo $message; ?>
             </div>
-        <?php endif; ?>
+        <?php } ?>
 
-        <?php if($error): ?>
+        <?php if($error) { ?>
             <div class="error-message">
                 <?php echo $error; ?>
             </div>
-        <?php endif; ?>
+        <?php } ?>
 
         <form method="post" enctype="multipart/form-data">
             <label>JSON File</label>
@@ -183,7 +175,7 @@ if(isset($_FILES['json_file']) && $_FILES['json_file']['error'] == 0) {
         </pre>
 
         <div class="auth-footer">
-            <a href="export_json.php">📤 Export your trips first</a>
+            <a href="export_json.php">Export your trips first</a>
         </div>
     </div>
 </div>

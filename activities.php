@@ -3,7 +3,7 @@ session_start();
 require "connection.php";
 global $conn;
 
-if(!isset($_SESSION['username'])) {
+if (!isset($_SESSION['username'])) {
     header("location: index.php");
     exit();
 }
@@ -12,10 +12,9 @@ $user_id = $_SESSION['user_id'];
 $user_type = $_SESSION['user_type'];
 $trip_id = $_GET['trip_id'] ?? 0;
 
-// Dohvati putovanje
 $trip = null;
-if($trip_id) {
-    if($user_type == 3) {
+if ($trip_id) {
+    if ($user_type == 3) {
         $stmt = $conn->prepare("SELECT * FROM trip WHERE id = ? AND user_id = ?");
         $stmt->bind_param("ii", $trip_id, $user_id);
     } else {
@@ -26,13 +25,12 @@ if($trip_id) {
     $trip = $stmt->get_result()->fetch_assoc();
 }
 
-if(!$trip) {
+if (!$trip) {
     header("location: dashboard.php");
     exit();
 }
 
-// CREATE - dodaj aktivnost
-if(isset($_POST['add_activity'])) {
+if (isset($_POST['add_activity'])) {
     $name = $_POST['name'];
     $start_date = $_POST['start_date'];
     $end_date = $_POST['end_date'];
@@ -45,8 +43,7 @@ if(isset($_POST['add_activity'])) {
     exit();
 }
 
-// DELETE - brisanje aktivnosti
-if(isset($_GET['delete_id'])) {
+if (isset($_GET['delete_id'])) {
     $delete_id = $_GET['delete_id'];
     $stmt = $conn->prepare("DELETE FROM activity WHERE id = ? AND trip_id = ?");
     $stmt->bind_param("ii", $delete_id, $trip_id);
@@ -55,14 +52,13 @@ if(isset($_GET['delete_id'])) {
     exit();
 }
 
-// READ - dohvati sve aktivnosti za ovo putovanje
 $stmt = $conn->prepare("SELECT * FROM activity WHERE trip_id = ? ORDER BY start_date");
 $stmt->bind_param("i", $trip_id);
 $stmt->execute();
 $activities = $stmt->get_result();
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
     <title>Activities - <?php echo htmlspecialchars($trip['name']); ?></title>
     <link rel="stylesheet" href="style.css">
@@ -101,21 +97,24 @@ $activities = $stmt->get_result();
         <th>Notes</th>
         <th>Actions</th>
     </tr>
-    <?php while($act = $activities->fetch_assoc()): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($act['name']); ?></td>
-            <td><?php echo $act['start_date']; ?></td>
-            <td><?php echo $act['end_date']; ?></td>
-            <td><?php echo htmlspecialchars($act['notes']); ?></td>
-            <td>
-                <a href="edit_activity.php?id=<?php echo $act['id']; ?>&trip_id=<?php echo $trip_id; ?>">✏️</a>
-                <a href="?trip_id=<?php echo $trip_id; ?>&delete_id=<?php echo $act['id']; ?>" onclick="return confirm('Delete activity?')">🗑️</a>
-            </td>
-        </tr>
-    <?php endwhile; ?>
-    <?php if($activities->num_rows == 0): ?>
-    <tr><td colspan="5">No activities yet.<?php endif; ?>
-</table>
+    <?php
+    while ($act = $activities->fetch_assoc()) {
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($act['name']) . "</td>";
+        echo "<td>" . $act['start_date'] . "</td>";
+        echo "<td>" . $act['end_date'] . "</td>";
+        echo "<td>" . htmlspecialchars($act['notes']) . "</td>";
+        echo "<td>";
+        echo "<a href='edit_activity.php?id=" . $act['id'] . "&trip_id=" . $trip_id . "'>✏️</a> ";
+        echo "<a href='?trip_id=" . $trip_id . "&delete_id=" . $act['id'] . "'>🗑️</a>";
+        echo "</td>";
+        echo "</tr>";
+    }
 
+    if ($activities->num_rows == 0) {
+        echo "<tr><td colspan='5'>No activities yet.</td></tr>";
+    }
+    ?>
+</table>
 </body>
 </html>

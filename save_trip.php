@@ -17,11 +17,9 @@ if(isset($_POST['trip_id'])) {
     $action = $_POST['action'] ?? 'save';
 
     if($action == 'save') {
-        // INSERT - čuvanje putovanja
         $stmt = $conn->prepare("INSERT INTO trip_save (user_id, trip_id) VALUES (?, ?)");
         $stmt->bind_param("ii", $user_id, $trip_id);
     } else {
-        // DELETE - otkazivanje čuvanja
         $stmt = $conn->prepare("DELETE FROM trip_save WHERE user_id = ? AND trip_id = ?");
         $stmt->bind_param("ii", $user_id, $trip_id);
     }

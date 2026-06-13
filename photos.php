@@ -12,7 +12,6 @@ $user_id = $_SESSION['user_id'];
 $user_type = $_SESSION['user_type'];
 $trip_id = $_GET['trip_id'] ?? 0;
 
-// Dohvati putovanje (samo ako user ima pravo)
 if($user_type == 3) {
     $stmt = $conn->prepare("SELECT * FROM trip WHERE id = ? AND user_id = ?");
     $stmt->bind_param("ii", $trip_id, $user_id);
@@ -28,7 +27,6 @@ if(!$trip) {
     exit();
 }
 
-// CREATE - dodaj fotografiju (neka baza stavi upload_date)
 if(isset($_POST['add_photo'])) {
     $name = $_POST['name'];
     $url = $_POST['url'];
@@ -41,7 +39,6 @@ if(isset($_POST['add_photo'])) {
     exit();
 }
 
-// DELETE - brisanje fotografije
 if(isset($_GET['delete_id'])) {
     $delete_id = $_GET['delete_id'];
     $stmt = $conn->prepare("DELETE FROM trip_photo WHERE id = ? AND trip_id = ?");
@@ -51,7 +48,6 @@ if(isset($_GET['delete_id'])) {
     exit();
 }
 
-// AJAX UPDATE - izmjena imena i captiona
 if(isset($_POST['ajax_update']) && isset($_POST['photo_id']) && isset($_POST['field']) && isset($_POST['value'])) {
     header('Content-Type: application/json');
 
@@ -64,7 +60,6 @@ if(isset($_POST['ajax_update']) && isset($_POST['photo_id']) && isset($_POST['fi
         exit();
     }
 
-    // Provjera da li korisnik ima pravo
     if($user_type == 3) {
         $check = $conn->prepare("
             SELECT tp.id FROM trip_photo tp 
@@ -93,7 +88,6 @@ if(isset($_POST['ajax_update']) && isset($_POST['photo_id']) && isset($_POST['fi
     exit();
 }
 
-// READ - dohvati sve fotografije
 $stmt = $conn->prepare("SELECT * FROM trip_photo WHERE trip_id = ? ORDER BY upload_date DESC");
 $stmt->bind_param("i", $trip_id);
 $stmt->execute();
@@ -109,14 +103,13 @@ $photos = $stmt->get_result();
 <body>
 <div class="trip-details-container">
     <div class="trip-header">
-        <h1>📷 Photos for: <?php echo htmlspecialchars($trip['name']); ?></h1>
+        <h1>Photos for: <?php echo htmlspecialchars($trip['name']); ?></h1>
         <a href="edit_trip.php?id=<?php echo $trip_id; ?>" class="btn btn-secondary">← Back to Trip</a>
         <a href="dashboard.php" class="btn btn-primary">Dashboard</a>
     </div>
 
-    <!-- Forma za dodavanje fotografije -->
     <div class="section">
-        <h2>➕ Add New Photo</h2>
+        <h2>Add New Photo</h2>
         <form method="post" style="max-width: 500px;">
             <label>Name</label>
             <input type="text" name="name" required>
@@ -130,34 +123,32 @@ $photos = $stmt->get_result();
             <input type="submit" name="add_photo" value="Add Photo">
         </form>
     </div>
-
-    <!-- Galerija slika -->
     <div class="section">
         <h2>📸 All Photos (<?php echo $photos->num_rows; ?>)</h2>
-        <?php if($photos->num_rows > 0): ?>
-            <div class="photo-gallery">
-                <?php while($photo = $photos->fetch_assoc()): ?>
-                    <div class="photo-card" data-id="<?php echo $photo['id']; ?>">
-                        <div class="photo-frame">
-                            <img src="<?php echo htmlspecialchars($photo['url']); ?>" alt="<?php echo htmlspecialchars($photo['name']); ?>">
-                        </div>
-                        <p><strong class="photo-name" data-id="<?php echo $photo['id']; ?>" data-field="name"><?php echo htmlspecialchars($photo['name']); ?></strong></p>
-                        <p class="photo-caption" data-id="<?php echo $photo['id']; ?>" data-field="caption"><?php echo htmlspecialchars($photo['caption']); ?></p>
-                        <small><?php echo $photo['upload_date']; ?></small>
-                        <br>
-                        <a href="?trip_id=<?php echo $trip_id; ?>&delete_id=<?php echo $photo['id']; ?>" class="delete-photo" onclick="return confirm('Delete this photo?')" style="color:red;">🗑️ Delete</a>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-        <?php else: ?>
-            <p class="no-data">No photos yet. Add your first photo!</p>
-        <?php endif; ?>
+        <?php
+        if($photos->num_rows > 0) {
+            echo '<div class="photo-gallery">';
+            while($photo = $photos->fetch_assoc()) {
+                echo '<div class="photo-card" data-id="' . $photo['id'] . '">';
+                echo '<div class="photo-frame">';
+                echo '<img src="' . htmlspecialchars($photo['url']) . '" alt="' . htmlspecialchars($photo['name']) . '">';
+                echo '</div>';
+                echo '<p><strong class="photo-name" data-id="' . $photo['id'] . '" data-field="name">' . htmlspecialchars($photo['name']) . '</strong></p>';
+                echo '<p class="photo-caption" data-id="' . $photo['id'] . '" data-field="caption">' . htmlspecialchars($photo['caption']) . '</p>';
+                echo '<small>' . $photo['upload_date'] . '</small><br>';
+                echo '<a href="?trip_id=' . $trip_id . '&delete_id=' . $photo['id'] . '" class="delete-photo" onclick="return confirm(\'Delete this photo?\')" style="color:red;">🗑️ Delete</a>';
+                echo '</div>';
+            }
+            echo '</div>';
+        } else {
+            echo '<p class="no-data">No photos. Add your first photo!</p>';
+        }
+        ?>
     </div>
 </div>
 
 <script>
     $(function() {
-        // AJAX UPDATE - izmjena imena slike (double click)
         $(document).on('dblclick', '.photo-name', function() {
             let element = $(this);
             let oldValue = element.text();
@@ -210,7 +201,6 @@ $photos = $stmt->get_result();
             });
         });
 
-        // AJAX UPDATE - izmjena captiona (double click)
         $(document).on('dblclick', '.photo-caption', function() {
             let element = $(this);
             let oldValue = element.text();
@@ -265,6 +255,5 @@ $photos = $stmt->get_result();
         });
     });
 </script>
-
 </body>
 </html>

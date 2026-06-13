@@ -3,7 +3,7 @@ session_start();
 require "connection.php";
 global $conn;
 
-if(!isset($_SESSION['username'])) {
+if (!isset($_SESSION['username'])) {
     header("location: index.php");
     exit();
 }
@@ -31,10 +31,13 @@ $result = $stmt->get_result();
 <body>
 <h2>My Saved Trips</h2>
 <a href="dashboard.php">Back to Dashboard</a>
-<a href="logout.php"><button>Logout</button></a>
+<a href="logout.php">
+    <button>Logout</button>
+</a>
 <hr>
 
 <table border="1">
+    <thead>
     <tr>
         <th>Name</th>
         <th>Author</th>
@@ -42,34 +45,37 @@ $result = $stmt->get_result();
         <th>Status</th>
         <th>Action</th>
     </tr>
-    <?php while($row = $result->fetch_assoc()) { ?>
-        <tr id="saved-row-<?php echo $row['id']; ?>">
-            <td><?php echo htmlspecialchars($row['name']); ?></td>
-            <td><?php echo htmlspecialchars($row['author_name']); ?></td>
-            <td><?php echo $row['start_date']; ?></td>
-            <td><?php echo $row['status']; ?></td>
-            <td>
-                <a href="javascript:void(0)" class="unsave-btn" data-id="<?php echo $row['id']; ?>">💔 Otkaži čuvanje</a>
-            </td>
-        </tr>
-    <?php } ?>
+    </thead>
+    <tbody>
+    <?php
+    while ($row = $result->fetch_assoc()) {
+        echo '<tr id="saved-row-' . $row['id'] . '">';
+        echo '<td>' . htmlspecialchars($row['name']) . '</td>';
+        echo '<td>' . htmlspecialchars($row['author_name']) . '</td>';
+        echo '<td>' . $row['start_date'] . '</td>';
+        echo '<td>' . $row['status'] . '</td>';
+        echo '<td><a href="#" class="unsave-btn" data-id="' . $row['id'] . '">Otkaži čuvanje</a></td>';
+        echo '</tr>';
+    }
+    ?>
+    </tbody>
 </table>
 
 <script>
-    $(function() {
-        $('.unsave-btn').on('click', function() {
+    $(function () {
+        $('.unsave-btn').on('click', function () {
             let tripId = $(this).data('id');
             let row = $('#saved-row-' + tripId);
 
-            if(confirm('Remove from saved trips?')) {
+            if (confirm('Remove from saved trips?')) {
                 $.ajax({
                     url: 'save_trip.php',
                     type: 'POST',
-                    data: { trip_id: tripId, action: 'unsave' },
+                    data: {trip_id: tripId, action: 'unsave'},
                     dataType: 'json',
-                    success: function(response) {
-                        if(response.success) {
-                            row.fadeOut(300, function() {
+                    success: function (response) {
+                        if (response.success) {
+                            row.fadeOut(300, function () {
                                 $(this).remove();
                             });
                         } else {
