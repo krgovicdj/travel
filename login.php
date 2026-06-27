@@ -14,9 +14,7 @@ if(isset($_POST['submit'])){
     $stmt->bind_param("ss", $username, $password);
     $stmt->execute();
     $result = $stmt->get_result();
-    if($result->num_rows == 0){
-        echo "<script>alert('Login data is Wrong');</script>";
-    }else{
+    if($result->num_rows > 0){
         $user_data = $result->fetch_assoc();
         $_SESSION['username'] = $username;
         $_SESSION['user_id'] = $user_data['id'];
@@ -35,8 +33,27 @@ if(isset($_POST['submit'])){
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Login</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
 </head>
 <body>
+<script>
+    $(function () {
+        $("input[type=submit]").on('click', function (e) {
+            let formUsername=$("input[name=username]").val();
+            let formPassword=$("input[name=password]").val();
+            let check=true;
+            if (formUsername.length===0) {
+                check=false;
+            }
+            if(formPassword.length<8){
+                check=false;
+            }
+            if(!check){
+                alert("Please enter valid data!");
+            }
+        });
+    });
+</script>
 <h2>Login</h2>
 <form method="POST" action="<?php echo $_SERVER['PHP_SELF'];?>">
     <label for="username">Username</label>

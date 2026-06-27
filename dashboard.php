@@ -129,7 +129,29 @@ if ($user_type != 2) {
         unset($_SESSION['success_message']);
     }
     ?>
-
+    <script>
+        $(function () {
+            $("input[name='submit']").on("click", function () {
+                let name = $("#name").val();
+                let start = $("#start_date").val();
+                let end = $("#end_date").val();
+                let notes = $("#notes").val();
+                let check=true;
+                if(name.length===0){
+                    check=false;
+                }
+                if (start>end){
+                    check=false;
+                }
+                if (notes.length>500){
+                    check=false;
+                }
+                if (!check){
+                    alert("Wrong trip data!");
+                }
+            });
+        });
+    </script>
     <form action="trip.php" method="post">
         <label for="name">Name</label>
         <input type="text" name="name" id="name" placeholder="Trip Name"
@@ -343,8 +365,9 @@ unset($_SESSION['old_input']);
         });
     });
 </script>
+
 <br>
 <br>
-<a href="import_json.php">Import JSON (samo admin)</a>
+<a href="import_json.php">Import JSON</a>
 </body>
 </html>

@@ -31,20 +31,19 @@ $result = $conn->query($sql);
     <a href="logout.php">
         <button>Logout</button>
     </a>
-<?php } else { ?>
-    <a href="login.php">Login</a>
-    <a href="register.php">Register</a>
-<?php } ?>
+<?php }?>
 <hr>
 
 <div>
-    <input type="text" id="searchInput" placeholder="Search by name or author..." onkeyup="filterTrips()">
-    <select id="statusFilter" onchange="filterTrips()">
+    <input type="text" id="searchInput" placeholder="Search by name or author...">
+    <select id="statusFilter">
         <option value="">All status</option>
         <option value="planirano">Planirano</option>
         <option value="u toku">U toku</option>
         <option value="završeno">Završeno</option>
     </select>
+    <button id="filterBtn">🔍 Filter</button>
+    <button id="resetBtn">🔄 Reset</button>
 </div>
 <br>
 
@@ -62,145 +61,193 @@ $result = $conn->query($sql);
     </thead>
     <tbody id="tripsBody">
     <?php while ($row = $result->fetch_assoc()) { ?>
-    <tr id="trip-row-<?php echo $row['id']; ?>"
-        data-name="<?php echo strtolower(htmlspecialchars($row['name'])); ?>"
-        data-author="<?php echo strtolower(htmlspecialchars($row['author_name'])); ?>"
-        data-status="<?php echo $row['status']; ?>">
-        <td class="trip-name"><?php echo htmlspecialchars($row['name']); ?></td>
-        <td class="trip-status"><?php echo htmlspecialchars($row['status']); ?></td>
-        <td class="trip-start"><?php echo $row['start_date']; ?></td>
-        <td class="trip-end"><?php echo $row['end_date']; ?></td>
-        <td class="trip-author"><?php echo htmlspecialchars($row['author_name']); ?></td>
-        <td>
-            <?php if (isset($_SESSION['username'])) { ?>
-                <a href="#" class="save-btn" data-id="<?php echo $row['id']; ?>">💾 Sačuvaj</a>
-                <?php if (($user_type == 1) || ($user_id == $row['author_id'])) { ?>
-                    <a href="edit_trip.php?id=<?php echo $row['id']; ?>">✏️</a>
-                <?php } ?>
+        <tr id="trip-row-<?php echo $row['id']; ?>">
+            <td><?php echo htmlspecialchars($row['name']); ?></td>
+            <td><?php echo htmlspecialchars($row['status']); ?></td>
+            <td><?php echo $row['start_date']; ?></td>
+            <td><?php echo $row['end_date']; ?></td>
+            <td><?php echo htmlspecialchars($row['author_name']); ?></td>
+            <td>
+                <?php if (isset($_SESSION['username'])) { ?>
+                    <a href="#" class="save-btn" data-id="<?php echo $row['id']; ?>">💾 Sačuvaj</a>
 
-                <?php if (($user_type == 1 || $user_type == 2) || ($user_id == $row['author_id'])) { ?>
-                    <a href="#" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
+                    <?php if ($user_type == 1) { ?>
+                        <a href="edit_trip.php?id=<?php echo $row['id']; ?>">✏️</a>
+                        <a href="#" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
+                    <?php } elseif ($user_type == 2) { ?>
+                        <a href="#" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
+                    <?php } elseif ($user_id == $row['author_id']) { ?>
+                        <a href="edit_trip.php?id=<?php echo $row['id']; ?>">✏️</a>
+                        <a href="#" class="delete-btn" data-id="<?php echo $row['id']; ?>">🗑️</a>
+                    <?php } ?>
                 <?php } ?>
-            <?php } else { ?>
-                <span>Login to save trips</span>
-            <?php } ?>
-            <a href="trip_details.php?id=<?php echo $row['id']; ?>" class="btn-details">📋 Details</a>
-        </td>
-        <td>
-            <a href="reviews.php?trip_id=<?php echo $row['id']; ?>">💬 Reviews</a>
-        </td>
-</tr>
-<?php } ?>
-</tbody>
+                <a href="trip_details.php?id=<?php echo $row['id']; ?>" class="btn-details">📋 Details</a>
+            </td>
+            <td>
+                <a href="reviews.php?trip_id=<?php echo $row['id']; ?>">💬 Reviews</a>
+            </td>
+        </tr>
+    <?php } ?>
+    </tbody>
 </table>
 
 <script>
-    function filterTrips() {
-        let search = document.getElementById('searchInput').value.toLowerCase();
-        let status = document.getElementById('statusFilter').value;
-        let rows = document.querySelectorAll('#tripsBody tr');
+    $(document).ready(function () {
+        let userType = <?php echo $user_type ?? 'null'; ?>;
+        let userId = <?php echo $user_id ?? 'null'; ?>;
 
-        rows.forEach(row => {
-            let name = row.getAttribute('data-name');
-            let author = row.getAttribute('data-author');
-            let tripStatus = row.getAttribute('data-status');
+        $('#filterBtn').click(function () {
+            let search = $('#searchInput').val();
+            let status = $('#statusFilter').val();
 
-            let matchSearch = name.includes(search) || author.includes(search);
-            let matchStatus = status === '' || tripStatus === status;
-
-            row.style.display = (matchSearch && matchStatus) ? '' : 'none';
-        });
-    }
-    <?php if(isset($_SESSION['username'])) { ?>
-    $(document).on('click', '.save-btn', function (e) {
-        e.preventDefault();
-        let tripId = $(this).data('id');
-        let btn = $(this);
-
-        $.ajax({
-            url: 'save_trip.php',
-            type: 'POST',
-            data: {trip_id: tripId, action: 'save'},
-            dataType: 'json',
-            success: function (response) {
-                if (response.success) {
-                    btn.text('✅ Sačuvano');
-                    setTimeout(() => btn.text('💾 Sačuvaj'), 2000);
-                } else {
-                    alert('Error: ' + response.error);
-                }
-            }
-        });
-    });
-
-    $(document).on('click', '.delete-btn', function (e) {
-        e.preventDefault();
-        let tripId = $(this).data('id');
-        let row = $('#trip-row-' + tripId);
-
-        if (confirm('Delete this trip?')) {
             $.ajax({
-                url: 'ajax_delete_trip.php',
-                type: 'POST',
-                data: {id: tripId},
+                url: 'ajax_filter_trips.php',
+                type: 'GET',
+                data: {
+                    search: search,
+                    status: status
+                },
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
-                        row.fadeOut(300, () => row.remove());
+                        $('#tripsBody').empty();
+
+                        if (response.data.length === 0) {
+                            $('#tripsBody').html('<tr><td colspan="7" style="text-align:center; padding:20px;">No trips found</td></tr>');
+                            return;
+                        }
+
+                        response.data.forEach(trip => {
+                            let actions = '';
+
+                            <?php if (isset($_SESSION['username'])) { ?>
+                            actions += `<a href="#" class="save-btn" data-id="${trip.id}">💾 Sačuvaj</a>`;
+
+                            if (userType == 1) {
+                                actions += ` <a href="edit_trip.php?id=${trip.id}">✏️</a>`;
+                                actions += ` <a href="#" class="delete-btn" data-id="${trip.id}">🗑️</a>`;
+                            } else if (userType == 2) {
+                                actions += ` <a href="#" class="delete-btn" data-id="${trip.id}">🗑️</a>`;
+                            } else if (userId == trip.author_id) {
+                                actions += ` <a href="edit_trip.php?id=${trip.id}">✏️</a>`;
+                                actions += ` <a href="#" class="delete-btn" data-id="${trip.id}">🗑️</a>`;
+                            }
+                            <?php } ?>
+
+                            actions += ` <a class="btn-details" href="trip_details.php?id=${trip.id}">📋 Details</a>`;
+
+                            $('#tripsBody').append(`
+                            <tr id="trip-row-${trip.id}">
+                                <td>${trip.name}</td>
+                                <td>${trip.status}</td>
+                                <td>${trip.start_date}</td>
+                                <td>${trip.end_date}</td>
+                                <td>${trip.author_name}</td>
+                                <td>${actions}</td>
+                                <td><a href="reviews.php?trip_id=${trip.id}">💬 Reviews</a></td>
+                            </tr>
+                        `);
+                        });
+                    }
+                }
+            });
+        });
+
+        $('#resetBtn').click(function () {
+            location.reload();
+        });
+
+        <?php if(isset($_SESSION['username'])) { ?>
+        $(document).on('click', '.save-btn', function (e) {
+            e.preventDefault();
+            let tripId = $(this).data('id');
+            let btn = $(this);
+
+            $.ajax({
+                url: 'save_trip.php',
+                type: 'POST',
+                data: {trip_id: tripId, action: 'save'},
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        btn.text('✅ Sačuvano');
+                        setTimeout(() => btn.html('💾 Sačuvaj'), 2000);
                     } else {
                         alert('Error: ' + response.error);
                     }
                 }
             });
-        }
-    });
-
-    $(document).on('dblclick', '.start-date, .end-date', function () {
-        let td = $(this);
-        let oldValue = td.text();
-        let tripId = td.data('id');
-        let field = td.data('field');
-
-        let input = $('<input>', {
-            type: 'date',
-            value: oldValue,
-            css: {width: '100%'}
         });
-        td.html(input);
-        input.focus();
 
-        input.on('blur', function () {
-            let newValue = $(this).val();
+        $(document).on('click', '.delete-btn', function (e) {
+            e.preventDefault();
+            let tripId = $(this).data('id');
+            let row = $('#trip-row-' + tripId);
 
-            if (newValue && newValue != oldValue) {
+            if (confirm('Delete this trip?')) {
                 $.ajax({
-                    url: 'ajax_update_date.php',
+                    url: 'ajax_delete_trip.php',
                     type: 'POST',
-                    data: {id: tripId, field: field, value: newValue},
+                    data: {id: tripId},
                     dataType: 'json',
                     success: function (response) {
                         if (response.success) {
-                            td.html(newValue);
-                            td.css('background-color', '#90EE90');
-                            setTimeout(function () {
-                                td.css('background-color', '');
-                            }, 500);
+                            row.fadeOut(300, () => row.remove());
                         } else {
                             alert('Error: ' + response.error);
-                            td.html(oldValue);
                         }
-                    },
-                    error: function () {
-                        td.html(oldValue);
-                        alert('AJAX error');
                     }
                 });
-            } else {
-                td.html(oldValue);
             }
         });
+
+        $(document).on('dblclick', '.trip-start, .trip-end', function () {
+            let td = $(this);
+            let oldValue = td.text();
+            let tripId = td.closest('tr').attr('id').replace('trip-row-', '');
+            let field = td.hasClass('trip-start') ? 'start_date' : 'end_date';
+
+            let input = $('<input>', {
+                type: 'date',
+                value: oldValue,
+                css: {width: '100%'}
+            });
+            td.html(input);
+            input.focus();
+
+            input.on('blur', function () {
+                let newValue = $(this).val();
+
+                if (newValue && newValue != oldValue) {
+                    $.ajax({
+                        url: 'ajax_update_date.php',
+                        type: 'POST',
+                        data: {id: tripId, field: field, value: newValue},
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success) {
+                                td.html(newValue);
+                                td.css('background-color', '#90EE90');
+                                setTimeout(function () {
+                                    td.css('background-color', '');
+                                }, 500);
+                            } else {
+                                alert('Error: ' + response.error);
+                                td.html(oldValue);
+                            }
+                        },
+                        error: function () {
+                            td.html(oldValue);
+                            alert('AJAX error');
+                        }
+                    });
+                } else {
+                    td.html(oldValue);
+                }
+            });
+        });
+        <?php } ?>
     });
-    <?php } ?>
 </script>
 
 <br>
